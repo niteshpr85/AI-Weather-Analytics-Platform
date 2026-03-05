@@ -123,6 +123,59 @@ Current implementation note:
 - `npm run preview` - Preview build
 - `npm run lint` - Run ESLint
 
+## Upload to GitHub
+
+If this folder is not yet a Git repo:
+
+```powershell
+git init
+git add .
+git commit -m "Initial project setup"
+git branch -M main
+git remote add origin https://github.com/<your-username>/<your-repo>.git
+git push -u origin main
+```
+
+If already initialized:
+
+```powershell
+git add .
+git commit -m "Update project"
+git push
+```
+
+## Deployment (Recommended)
+
+Use:
+- Backend: Render (Web Service)
+- Frontend: Vercel (Static React app)
+
+### 1. Deploy Backend on Render
+
+Create a new Web Service from your GitHub repo with:
+- Root Directory: `backend`
+- Build Command: `pip install -r requirements.txt`
+- Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+
+Environment variables:
+- `OPENWEATHER_API_KEY=your_api_key_here`
+- `OPENWEATHER_BASE_URL=https://api.openweathermap.org`
+
+After deploy, copy backend URL:
+- Example: `https://your-backend.onrender.com`
+
+### 2. Deploy Frontend on Vercel
+
+Import the same GitHub repo in Vercel with:
+- Root Directory: `frontend`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+
+Environment variable:
+- `VITE_API_BASE_URL=https://your-backend.onrender.com`
+
+Redeploy frontend after setting env var.
+
 ## Documentation
 
 - Architecture: `documentation/ARCHITECTURE.md`

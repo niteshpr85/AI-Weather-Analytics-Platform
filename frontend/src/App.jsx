@@ -27,7 +27,7 @@ function App() {
   const [recentSearches, setRecentSearches] = useState([])
   const [favorites, setFavorites] = useState([])
 
-  const API_BASE = 'http://localhost:8000'
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
   const inputDebounce = React.useRef(null)
 
