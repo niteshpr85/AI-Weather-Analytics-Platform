@@ -150,6 +150,10 @@ Use:
 - Backend: Render (Web Service)
 - Frontend: Vercel (Static React app)
 
+Deployment config files included:
+- `render.yaml` (Render backend blueprint)
+- `vercel.json` (Vercel build config for monorepo)
+
 ### 1. Deploy Backend on Render
 
 Create a new Web Service from your GitHub repo with:
