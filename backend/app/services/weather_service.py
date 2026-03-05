@@ -25,29 +25,70 @@ class WeatherService:
         return data[0]
 
     def get_current_weather(self, city: str) -> dict[str, Any]:
-        # For demo purposes, always use mock data
-        return self._fallback_weather(city)
+        try:
+            geo_data = self._geocode_city(city)
+            lat, lon = geo_data["lat"], geo_data["lon"]
+            
+            url = f"{self.base_url}/data/2.5/weather"
+            params = {"lat": lat, "lon": lon, "appid": self.api_key, "units": "metric"}
+            data = self._get_json(url, params=params)
+            
+            return {
+                "city": city,
+                "temperature_c": data["main"]["temp"],
+                "feels_like_c": data["main"]["feels_like"],
+                "humidity_percent": data["main"]["humidity"],
+                "pressure_hpa": data["main"]["pressure"],
+                "weather_main": data["weather"][0]["main"],
+                "weather_description": data["weather"][0]["description"],
+                "wind_speed_mps": data["wind"]["speed"],
+                "air_quality_index": 3,
+                "timestamp_utc": datetime.utcfromtimestamp(data["dt"]).isoformat() + "Z",
+                "source": "openweather_api",
+            }
+        except Exception as e:
+            print(f"Error fetching current weather for {city}: {e}")
+            return self._fallback_weather(city)
 
     def get_forecast(self, city: str) -> dict[str, Any]:
-        # For demo purposes, return mock forecast data
-        forecast_data = []
-        base_temp = 28.0
-        conditions = ["Clear", "Clouds", "Rain", "Sunny"]
-        
-        for i in range(7):
-            forecast_data.append({
-                "date": f"2024-03-{5+i:02d}",
-                "temperature_c": base_temp + (i % 3 - 1) * 2,  # Vary temperature
-                "condition": conditions[i % len(conditions)],
-                "humidity": 50 + (i * 5) % 30,
-                "wind_kph": 10 + (i * 2) % 15
-            })
-        
-        return {"city": city, "forecast": forecast_data}
+        try:
+            geo_data = self._geocode_city(city)
+            lat, lon = geo_data["lat"], geo_data["lon"]
+            
+            url = f"{self.base_url}/data/2.5/forecast"
+            params = {"lat": lat, "lon": lon, "appid": self.api_key, "units": "metric"}
+            data = self._get_json(url, params=params)
+            
+            forecast_data = []
+            for item in data["list"][::8]:  # Every 8 items = every 24 hours
+                forecast_data.append({
+                    "date": datetime.utcfromtimestamp(item["dt"]).strftime("%Y-%m-%d"),
+                    "temperature_c": item["main"]["temp"],
+                    "condition": item["weather"][0]["main"],
+                    "humidity": item["main"]["humidity"],
+                    "wind_kph": item["wind"]["speed"] * 3.6,
+                })
+            
+            return {"city": city, "forecast": forecast_data}
+        except Exception as e:
+            print(f"Error fetching forecast for {city}: {e}")
+            return {"city": city, "forecast": []}
 
     def get_air_quality(self, city: str) -> dict[str, Any]:
-        # For demo purposes, return mock air quality data
-        return {"city": city, "air_quality_index": 2, "label": "Fair"}
+        try:
+            geo_data = self._geocode_city(city)
+            lat, lon = geo_data["lat"], geo_data["lon"]
+            
+            url = f"{self.base_url}/data/3.0/uvi"
+            params = {"lat": lat, "lon": lon, "appid": self.api_key}
+            data = self._get_json(url, params=params)
+            
+            aqi = max(1, min(5, round(data.get("value", 3) / 2)))
+            
+            return {"city": city, "air_quality_index": aqi, "label": self._aqi_label(aqi)}
+        except Exception as e:
+            print(f"Error fetching air quality for {city}: {e}")
+            return {"city": city, "air_quality_index": 2, "label": "Fair"}
 
     @staticmethod
     def _aqi_label(aqi: int) -> str:
