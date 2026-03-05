@@ -58,6 +58,12 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
+Optional ML dependencies (only if you start using training/inference code):
+
+```powershell
+pip install -r requirements-ml.txt
+```
+
 Backend URLs:
 - API root: `http://127.0.0.1:8000/`
 - Swagger docs: `http://127.0.0.1:8000/docs`
